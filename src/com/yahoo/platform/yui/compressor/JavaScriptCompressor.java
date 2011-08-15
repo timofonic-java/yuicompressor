@@ -1,11 +1,11 @@
 /*
  * YUI Compressor
- * Author: Julien Lecomte - http://www.julienlecomte.net/
- * Copyright (c) 2009 Yahoo! Inc.  All rights reserved.
+ * http://developer.yahoo.com/yui/compressor/
+ * Author: Julien Lecomte -  http://www.julienlecomte.net/
+ * Copyright (c) 2011 Yahoo! Inc.  All rights reserved.
  * The copyrights embodied in the content of this file are licensed
  * by Yahoo! Inc. under the BSD (revised) open source license.
  */
-
 package com.yahoo.platform.yui.compressor;
 
 import org.mozilla.javascript.*;
@@ -170,6 +170,8 @@ public class JavaScriptCompressor {
         literals.put(new Integer(Token.DOTDOT), "..");
         literals.put(new Integer(Token.DOTQUERY), ".(");
         literals.put(new Integer(Token.XMLATTR), "@");
+        literals.put(new Integer(Token.LET), "let ");
+        literals.put(new Integer(Token.YIELD), "yield ");
 
         // See http://developer.mozilla.org/en/docs/Core_JavaScript_1.5_Reference:Reserved_Words
 
@@ -308,6 +310,7 @@ public class JavaScriptCompressor {
             throws IOException, EvaluatorException {
 
         CompilerEnvirons env = new CompilerEnvirons();
+        env.setLanguageVersion(Context.VERSION_1_7);
         Parser parser = new Parser(env, reporter);
         parser.parse(in, null, 1);
         String source = parser.getEncodedSource();
@@ -1020,7 +1023,7 @@ public class JavaScriptCompressor {
                                     // We don't need to declare longer symbols since they won't cause
                                     // any conflict with other munged symbols.
                                     globalScope.declareIdentifier(symbol);
-                                    warn("Found an undeclared symbol: " + symbol, true);
+                                    // warn("Found an undeclared symbol: " + symbol, true);
                                 }
 
                             } else {
@@ -1088,6 +1091,7 @@ public class JavaScriptCompressor {
 
         String symbol;
         JavaScriptToken token;
+        JavaScriptToken lastToken = getToken(0);
         ScriptOrFnScope currentScope;
         JavaScriptIdentifier identifier;
 
@@ -1105,6 +1109,9 @@ public class JavaScriptCompressor {
             currentScope = getCurrentScope();
 
             switch (token.getType()) {
+                case Token.GET:
+                case Token.SET:
+                    lastToken = token;
 
                 case Token.NAME:
 
@@ -1160,7 +1167,9 @@ public class JavaScriptCompressor {
                     break;
 
                 case Token.FUNCTION:
-                    result.append("function");
+                    if (lastToken.getType() != Token.GET && lastToken.getType() != Token.SET) {
+                        result.append("function");
+                    }
                     token = consumeToken();
                     if (token.getType() == Token.NAME) {
                         result.append(' ');

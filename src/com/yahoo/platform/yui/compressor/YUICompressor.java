@@ -1,11 +1,11 @@
 /*
  * YUI Compressor
- * Author: Julien Lecomte - http://www.julienlecomte.net/
- * Copyright (c) 2009 Yahoo! Inc.  All rights reserved.
+ * http://developer.yahoo.com/yui/compressor/
+ * Author: Julien Lecomte -  http://www.julienlecomte.net/
+ * Copyright (c) 2011 Yahoo! Inc.  All rights reserved.
  * The copyrights embodied in the content of this file are licensed
  * by Yahoo! Inc. under the BSD (revised) open source license.
  */
-
 package com.yahoo.platform.yui.compressor;
 
 import jargs.gnu.CmdLineParser;
@@ -81,6 +81,10 @@ public class YUICompressor {
             String[] fileArgs = parser.getRemainingArgs();
             java.util.List files = java.util.Arrays.asList(fileArgs);
             if (files.isEmpty()) {
+                if (type == null) {
+                    usage();
+                    System.exit(1);
+                }
                 files = new java.util.ArrayList();
                 files.add("-"); // read from stdin
             }
@@ -226,7 +230,7 @@ public class YUICompressor {
 
     private static void usage() {
         System.err.println(
-                "\nUsage: java -jar yuicompressor-x.y.z.jar [options] [input file]\n\n"
+                "\nUsage: java -jar yuicompressor-2.4.6.jar [options] [input file]\n\n"
 
                         + "Global Options\n"
                         + "  -h, --help                Displays this information\n"
